@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Wrapped - Analysis</title>
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1><span class="netflix">Netflix</span> <span class="wrapped">Wrapped</span></h1>
+    </div>
+
+    <div class="container">
+        <div class="chart-container">
+            <canvas id="runtimeChart"></canvas>
+        </div>
+    </div>
+
+    <div class="container">
+	    <div id="totalRuntimeInfo"></div>
+        <div class="data-container">
+            <div id="runtimeData"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="bingedTvChartContainer">
+            <canvas id="bingedTvChart" width="800" height="400"></canvas>
+        </div>
+    </div>
+    
+    <div class="container">
+	    <div id="firstBingedTvInfo"></div>
+        <div class="data-container">
+            <div id="bingedTvData"></div>
+        </div>
+    </div>
+
+  
+
+    <div class="container">
+        <div id="firstEntryInfo"></div>
+        <div class="data-container">
+            <div id="genreData"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="firstDirectorInfo"></div>
+        <div class="data-container">
+            <div id="directorData"></div>
+        </div> 
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: '/api/runtime',
+                method: 'GET',
+                success: function(data) {
+		      let totalRuntime = data.reduce((acc, item) => acc + parseInt(item.totaltime), 0);
+
+			    // Display total runtime information outside the data-container
+			    let totalRuntimeContent = '<h2>Total Runtime</h2>';
+			    totalRuntimeContent += '<p><span style="color: white; font-size: 26px;">You have watched </span><span style="color: #e50914; font-size: 28px;">' + totalRuntime + ' minutes of Netflix </span></p>';
+			    $('#totalRuntimeInfo').html(totalRuntimeContent);
+
+			    // Populate runtimeData container with individual runtime data
+			    let content = '<table class="data-table"><tr><th>Year</th><th>Type</th><th>Total Time (min)</th></tr>';
+			    data.forEach(function(item) {
+			        content += `<tr><td>${item.year}</td><td>${item.titleType}</td><td>${item.totaltime}</td></tr>`;
+			    });
+			    content += '</table>';
+			    $('#runtimeData').html(content);
+                    // Prepare data for the chart
+                    var types = data.map(item => item.titleType);
+                    var totalTimes = data.map(item => item.totaltime);
+                    
+                    // Create the chart
+                    var ctx = document.getElementById('runtimeChart').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: types,
+                            datasets: [{
+                                label: 'Total Time (min)',
+                                data: totalTimes,
+                                backgroundColor: [
+                                'rgba(255, 99, 132, 0.5)',
+                                    'rgba(54, 162, 235, 0.5)',
+                                    'rgba(255, 206, 86, 0.5)',
+                                    'rgba(75, 192, 192, 0.5)',
+                                    'rgba(153, 102, 255, 0.5)',
+                                    'rgba(255, 159, 64, 0.5)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)',
+                                    'rgba(255, 159, 64, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Runtime by Type'
+                                },
+                                legend: {
+                                    display: true,
+                                    position: 'right'
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function() {
+                    $('#runtimeData').html('<p>No data found for runtime.</p>');
+                }
+            });
+            $.ajax({
+    url: '/api/binged_tv',
+    method: 'GET',
+    success: function(data) {
+        // Prepare data for the bar graph
+        var titles = data.map(item => item.primarytitle);
+        var totalTimes = data.map(item => item.totaltime);
+
+        // Create the bar graph
+        var ctx = document.getElementById('bingedTvChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: titles,
+                datasets: [{
+                    label: 'Total Time (min)',
+                    data: totalTimes,
+                    backgroundColor:  'rgba(229, 9, 20, 0.5)',
+                    borderColor: 'rgba(229, 9, 20, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Binged TV Shows'
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 10,
+                        top: 10,
+                        bottom: 10
+                    }
+                }
+            }
+        });
+
+        // Display additional data outside the chart
+        var firstEntry = data[0];
+        var tvShowTitle = firstEntry.primarytitle;
+        $('#firstBingedTvInfo').html('<span style="color: white; font-size: 28px;">You have Binged </span><span style="color: #e50914; font-size: 28px;">"' + tvShowTitle + '"</span>');
+
+        var content = '<h2>You loved watching ' + data[0].primarytitle + '</h2>'; // First entry of the query result
+        content += '<table class="data-table"><tr><th>Title</th><th>Total Time (min)</th><th>Number of Episodes</th></tr>';
+        data.forEach(function(item) {
+            content += `<tr><td>${item.primarytitle}</td><td>${item.totaltime}</td><td>${item.number_of_eps}</td></tr>`;
+        });
+        content += '</table>';
+        $('#bingedTvData').html(content);
+    },
+    error: function() {
+        $('#bingedTvData').html('<p>No data found for binged TV shows.</p>');
+    }
+});
+
+
+            $.ajax({
+                    url: '/api/genre',
+                    method: 'GET',
+                    success: function(data) {
+                        var firstEntry = data[0];
+        	var title = firstEntry.generes; // Assuming the genre is stored in the 'generes' field
+
+       	 	// Inserting the information into the desired location
+        $('#firstEntryInfo').html('<span style="color: white; font-size: 28px;">The genere you find comforting </span><span style="color: #e50914; font-size: 28px;">' + title + '</span>');
+			let content = '<h2>Most Watched Genres</h2>';
+                        content += '<table class="data-table"><tr><th>Genre</th><th>Count</th></tr>';
+                        data.forEach(function(item) {
+                            content += `<tr><td>${item.generes}</td><td>${item.GenreCount}</td></tr>`;
+                        });
+                        content += '</table>';
+                        $('#genreData').html(content);
+                    },
+                    error: function() {
+                        $('#genreData').html('<p>No data found for genres.</p>');
+                    }
+            });
+            $.ajax({
+                url: '/api/director',
+                method: 'GET',
+                success: function(data) {
+                     var firstEntry = data[0];
+	        var directorName = firstEntry.primaryName;
+
+	        // Inserting the information into the desired location
+	        $('#firstDirectorInfo').html('<span style="color: white; font-size: 28px;">Your favourite director is </span><span style="color: #e50914; font-size: 28px;">' + directorName + '</span>');
+        
+                    let content = '<h2>Most Enjoyed Directors</h2>';
+                    content += '<table class="data-table"><tr><th>Director</th><th>Number of Times Watched</th></tr>';
+                    data.forEach(function(item) {
+                        content += `<tr><td>${item.primaryName}</td><td>${item.WatchCount}</td></tr>`;
+                    });
+                    content += '</table>';
+                    $('#directorData').html(content);
+                },
+                error: function() {
+                    $('#directorData').html('<p>No data found for directors.</p>');
+                }
+            });
+
+        });
+        
+    </script>
+</body>
+</html>

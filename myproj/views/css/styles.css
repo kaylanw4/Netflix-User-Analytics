@@ -1,0 +1,233 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #000; /* Full black background */
+    color: white;
+    text-align: center;
+}
+
+.header {
+    background-color: #000; /* Netflix red */
+    padding: 20px;
+    text-align: center;
+}
+
+.header h1 {
+    margin: 0;
+    display: inline; /* Inline display for header elements */
+}
+
+.header .netflix {
+    color: #e50914; /* Netflix red */
+}
+
+.header .wrapped {
+    color: white; /* Wrapped text in white */
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Adjust the width as needed */
+    height: 400px; /* Set the height to your desired fixed size */
+    margin: auto; /* Center the container horizontally */
+    padding: 5px; /* Add some padding for spacing */
+}
+
+.upload-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: calc(100% - 40px); /* Adjust height accounting for header */
+}
+
+.upload-instructions {
+    font-size: 1.5em; /* Larger text for instructions */
+    margin-bottom: 30px; /* Space above upload box */
+    line-height: 1.8; /* Increased line height for better readability */
+}
+
+.upload-box {
+    border: 3px dashed #e50914; /* Netflix red */
+    padding: 40px; /* Increased padding for a larger box */
+    margin: 20px;
+    display: inline-block;
+    cursor: pointer;
+    font-size: 1.5em; /* Larger text inside the box */
+}
+
+.upload-btn {
+    background-color: #e50914;
+    color: white;
+    border: none;
+    padding: 15px 30px; /* Larger button */
+    margin-top: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    outline: none;
+}
+
+.upload-btn:hover {
+    background-color: #b20710;
+}
+
+input[type="file"] {
+    display: none; /* Hide the default file input */
+}
+
+.loading-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    font-size: 2em;
+}
+
+.data-container {
+ margin-top: 2px;
+    padding: 2px;
+    border: 1px solid #ccc;
+    background-color: #000; /* Black background */
+    overflow-y: auto; /* Make it scrollable */
+    max-height: 300px;
+    width: 90%; /* Wider width for the data container */
+    height: 400px; /* Adjusted height for the data container */
+    text-align: center; /* Center-align contents */
+}
+
+.button {
+    padding: 8px;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+}
+
+.button.red {
+    background-color: #e50914; /* Red color */
+}
+
+.button.red:hover {
+    background-color: #b20710; /* Darker red on hover */
+}
+
+.chart-container {
+    width: 28%; /* Adjusted width */
+    float: left;
+    margin-right: 20px;
+}
+
+canvas {
+    width: 100%;
+    height: auto;
+    max-width: 600px; /* 60% of the original width */
+}
+
+.runtime-table .data-table {
+    width: 40%;
+    height: 160%;
+    /* Add any other styling specific to the runtime data table */
+}
+
+/* Dropdown styling */
+.dropdown-container {
+    margin-top: 20px;
+    position: relative;
+    width: 200px; /* Adjust width as needed */
+}
+
+.dropdown {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    padding: 8px; /* Adjust padding as needed */
+    border: none;
+    border-radius: 5px;
+    background-color: #e50914; /* Netflix red */
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    outline: none;
+}
+
+/* Dropdown arrow */
+.dropdown::after {
+    content: '\25BC';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.runtime-heading {
+    font-size: 20px; /* Adjust the font size as needed */
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.data-table th,
+.data-table td {
+    border: 0px solid white;
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ccc; /* Add a border line below each cell */
+}
+
+.data-table th {
+    background-color: #0000;
+    color: white;
+}
+
+.data-table tr:nth-child(even) {
+    background-color: #0000;
+}
+
+.button {
+    padding: 5px 10px;
+    margin: 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    border: none;
+    background-color: #e50914;
+}
+
+.button:hover {
+    background-color: #b20710;
+}
+
+.search-box {
+    margin: 0 auto; /* Center the search box horizontally */
+    margin-bottom: 20px;
+    width: 80%; /* Make the search box wider */
+}
+
+.search-box input[type="text"] {
+    padding: 8px;
+    margin-right: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+#firstEntryInfo {
+    font-size: 24px; /* Adjust the font size as needed */
+    color: #e50914; /* Netflix red */
+    margin-bottom: 20px; /* Add some spacing below the title */
+}

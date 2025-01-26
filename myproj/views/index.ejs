@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Wrapped</title>
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1><span class="netflix">Netflix</span> <span class="wrapped">Wrapped</span></h1>
+    </div>
+
+    <div class="upload-container">
+        <!-- Upload Instructions -->
+        <div class="upload-instructions">
+            Instructions:<br>
+            Tap on the user icon.<br>
+            Click on Account.<br>
+            Scroll down and click on Manage Profiles.<br>
+            Click on the profile you want to analyze.<br>
+            Go to "Viewing activity".
+            Scroll down and click "Download all" at the bottom, then upload the file here.
+        </div>
+
+        <!-- Upload Box -->
+        <div class="upload-box" onclick="document.getElementById('file-upload').click()">
+            Upload Netflix history csv
+        </div>
+        <input id="file-upload" type="file"/>
+
+        <!-- Dropdown Box -->
+        <div class="dropdown-container">
+            <select id="year-dropdown" class="dropdown">
+                <option value="">Select Year</option>
+                <option value="19">2019</option>
+                <option value="20">2020</option>
+                <option value="21">2021</option>
+                <option value="22">2022</option>
+                <option value="23">2023</option>
+                <option value="24">2024</option>
+            </select>
+        </div>
+
+        <!-- Upload Button -->
+        <button class="upload-btn" onclick="uploadFile()">Upload</button>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+        <h2>Loading...</h2>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- JavaScript -->
+    <script>
+        function uploadFile() {
+            var yearDropdown = document.getElementById('year-dropdown');
+            var fileInput = document.getElementById('file-upload');
+
+            // Check if a year is selected in the dropdown
+            if (yearDropdown.value === "") {
+                alert('Please select a year first.');
+                return;
+            }
+
+            // Check if a file is selected
+            if (fileInput.files.length > 0) {
+                var formData = new FormData();
+                formData.append('csvFile', fileInput.files[0]);
+                
+                // Display the loading overlay
+                $('#loading-overlay').css('display', 'flex');
+
+                // Get the selected year
+                var selectedYear = yearDropdown.value;
+
+                // Call the API with the selected year
+                $.ajax({
+                    url: '/api/create/' + selectedYear, // Updated URL
+                    type: 'GET',
+                    success: function(data) {
+                        // Once API call is successful, proceed with file upload
+                        $.ajax({
+                            url: '/api/upload-csv',
+                            type: 'POST',
+                            data: formData,
+                            contentType: false,
+                            processData: false,
+                            success: function(data) {
+                                // After successful upload, redirect to results page with selected year
+                                $('#loading-overlay').hide(); // Hide loading overlay on success
+                                window.location.href = '/results?year=' + selectedYear;
+                            },
+                            error: function() {
+                                $('#loading-overlay').hide(); // Hide loading overlay on error
+                                alert('There was an error uploading the file!');
+                            }
+                        });
+                    },
+                    error: function() {
+                        $('#loading-overlay').hide(); // Hide loading overlay on error
+                        alert('There was an error calling the API!');
+                    }
+                });
+            } else {
+                alert('Please select a file first.');
+            }
+        }
+    </script>
+</body>
+</html>

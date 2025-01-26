@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Wrapped - Results</title>
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1><span class="netflix">Netflix</span> <span class="wrapped">Wrapped</span></h1>
+    </div>
+    <!-- Search Box -->
+    <div class="search-and-add">
+        <!-- Search Box -->
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button id="searchButton" class="button">Search</button>
+            <button id="addButton" class="button add-button">Add</button>
+        </div>
+    </div>
+    <div class="container">
+        <div id="displayInfo" class="data-container"></div>
+    </div>
+    
+    <button id="analysisButton" class="button">Go to Analysis</button>
+
+    <!-- Modal for Add -->
+    <div id="myModal" class="modal"></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+
+            $('#analysisButton').click(function() {
+                window.location.href = '/analysis'; // Redirect to the analysis page
+            });
+            // Function to load display info
+            function loadDisplayInfo() {
+                $.ajax({
+                    url: '/api/display',
+                    method: 'GET',
+                    success: function(data) {
+                        let content = '<table class="data-table"><tr><th>ID</th><th>Title</th><th>Runtime (minutes)</th><th>Season</th><th>Date</th><th>Title Type</th><th>Actions</th></tr>';
+                        data.forEach(function(item) {
+                            content += `<tr id="display_${item.id}"><td>${item.id}</td><td>${item.primaryTitle}</td><td>${item.runtimeMinutes}</td><td>${item.Season}</td><td>${item.Date}</td><td>${item.titleType}</td><td><button class="button modify-button" data-id="${item.id}" data-primaryTitle="${item.primaryTitle}" data-runtimeMinutes="${item.runtimeMinutes}" data-Season="${item.Season}" data-Date="${item.Date}" data-titleType="${item.titleType}">Modify</button> <button class="button delete-button" data-id="${item.id}">Delete</button></td></tr>`;
+                        });
+                        content += '</table>';
+                        $('#displayInfo').html(content);
+                    },
+                    error: function() {
+                        $('#displayInfo').html('<p>Error fetching display info.</p>');
+                    }
+                });
+            }
+            loadDisplayInfo();
+
+            // Modify Button Click Event
+            $(document).on('click', '.modify-button', function() {
+                var displayId = $(this).data('id');
+                var displayRow = $('#display_' + displayId);
+                var primaryTitle = $(this).data('primarytitle');
+                var runtimeMinutes = parseInt($(this).data('runtimeminutes')); // Convert to integer
+                var Season = $(this).data('season');
+                var Date = $(this).data('date');
+                var titleType = $(this).data('titletype');
+
+                var titleInput = $('<input type="text" class="edit-title" value="' + primaryTitle + '">');
+                var runtimeInput = $('<input type="number" class="edit-runtime" value="' + runtimeMinutes + '">'); // Change input type to number
+                var seasonInput = $('<input type="text" class="edit-season" value="' + Season + '">');
+                var dateInput = $('<input type="text" class="edit-date" value="' + Date + '">');
+                var titleTypeInput = $('<input type="text" class="edit-titleType" value="' + titleType + '">');
+                
+                displayRow.find('td:eq(1)').html(titleInput);
+                displayRow.find('td:eq(2)').html(runtimeInput);
+                displayRow.find('td:eq(3)').html(seasonInput);
+                displayRow.find('td:eq(4)').html(dateInput);
+                displayRow.find('td:eq(5)').html(titleTypeInput);
+                
+                var modifyButton = $('<button class="button update-button">Update</button>');
+                displayRow.find('td:eq(6)').html(modifyButton);
+            });
+
+            // Update Button Click Event
+            $(document).on('click', '.update-button', function() {
+                var displayId = $(this).closest('tr').attr('id').split('_')[1];
+                var displayRow = $(this).closest('tr');
+                var primaryTitle = displayRow.find('.edit-title').val();
+                var runtimeMinutes = parseInt(displayRow.find('.edit-runtime').val()); // Convert to integer
+                var Season = displayRow.find('.edit-season').val();
+                var Date = displayRow.find('.edit-date').val();
+                var titleType = displayRow.find('.edit-titleType').val();
+
+                $.ajax({
+                    url: '/api/display/update/' + displayId,
+                    method: 'POST',
+                    data: JSON.stringify({ primaryTitle: primaryTitle, runtimeMinutes: runtimeMinutes, Season: Season, Date: Date, titleType: titleType }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        loadDisplayInfo();
+                        alert('Display info updated successfully');
+                    },
+                    error: function() {
+                        alert('Error updating display info');
+                    }
+                });
+            });
+
+            // Delete Button Click Event
+            $(document).on('click', '.delete-button', function() {
+                var displayId = $(this).data('id');
+                if (confirm('Are you sure you want to delete this display info?')) {
+                    $.ajax({
+                        url: '/api/display/delete/' + displayId,
+                        method: 'POST',
+                        success: function(response) {
+                            $('#display_' + displayId).remove();
+                            alert('Display info deleted successfully');
+                        },
+                        error: function() {
+                            alert('Error deleting display info');
+                        }
+                    });
+                }
+            });
+
+            // Search Button Click Event
+            $('#searchButton').click(function() {
+                var searchText = $('#searchInput').val();
+                searchDisplay(searchText);
+            });
+
+            // Function to search and filter display items
+            function searchDisplay(searchText) {
+                $.ajax({
+                    url: '/api/display/search',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ searchText: searchText }),
+                    success: function(data) {
+                        renderDisplayInfo(data);
+                    },
+                    error: function() {
+                        $('#displayInfo').html('<p>Error fetching filtered display info.</p>');
+                    }
+                });
+            }
+
+            // Function to render display info
+            function renderDisplayInfo(data) {
+                let content = '<table class="data-table"><tr><th>ID</th><th>Title</th><th>Runtime (minutes)</th><th>Season</th><th>Date</th><th>Title Type</th><th>Actions</th></tr>';
+                data.forEach(function(item) {
+                    content += `<tr id="display_${item.id}"><td>${item.id}</td><td>${item.primaryTitle}</td><td>${item.runtimeMinutes}</td><td>${item.Season}</td><td>${item.Date}</td><td>${item.titleType}</td><td><button class="button modify-button" data-id="${item.id}" data-primaryTitle="${item.primaryTitle}" data-runtimeMinutes="${item.runtimeMinutes}" data-Season="${item.Season}" data-Date="${item.Date}" data-titleType="${item.titleType}">Modify</button> <button class="button delete-button" data-id="${item.id}">Delete</button></td></tr>`;
+                });
+                content += '</table>';
+                $('#displayInfo').html(content);
+            }
+            $(document).ready(function() {
+            // Add Button Click Event
+            $('#addButton').click(function() { 
+            // Open dialogue box for adding a new item
+            var modalContent = '<div class="modal-content">' +
+                '<span class="close">&times;</span>' +
+                '<input type="text" id="addId" placeholder="ID">' +
+                '<input type="text" id="addTconst" placeholder="Tconst">' +
+                '<input type="text" id="addTitle" placeholder="Title">' +
+                '<input type="number" id="addRuntime" placeholder="Runtime (minutes)">' +
+                '<input type="text" id="addSeason" placeholder="Season">' +
+                '<input type="text" id="addDate" placeholder="Date">' +
+                '<input type="text" id="addTitleType" placeholder="Title Type">' +
+                '<button id="submitAdd" class="button">Add</button>' +
+                '</div>';
+            
+            $('#myModal').html(modalContent);
+            $('#myModal').css('display', 'block');
+
+            // Close dialogue box when close button is clicked
+            $('.close').click(function() {
+                $('#myModal').css('display', 'none');
+            });
+
+            // Submit Add Button Click Event
+            $('#submitAdd').click(function() {
+                var id = $('#addId').val();
+                var tconst = $('#addTconst').val();
+                var title = $('#addTitle').val();
+                var runtime = $('#addRuntime').val();
+                var season = $('#addSeason').val();
+                var date = $('#addDate').val();
+                var titleType = $('#addTitleType').val();
+
+                $.ajax({
+                    url: '/api/display/add',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ id: id, tconst: tconst, primaryTitle: title, runtimeMinutes: runtime, Season: season, Date: date, titleType: titleType }),
+                    success: function(response) {
+                        loadDisplayInfo();
+                        alert('Display info added successfully');
+                        $('#myModal').css('display', 'none');
+                    },
+                    error: function() {
+                        alert('Error adding display info');
+                    }
+                    });
+                });
+            });
+        });
+            
+    });
+    </script>
+</body>
+</html>
